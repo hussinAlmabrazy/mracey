@@ -170,7 +170,7 @@ openssl rand -base64 32
 
 | المشكلة | الحل |
 |---|---|
-| **`Command "bun install" exited with 1`** | نسخة قديمة من الحزمة كانت تستخدم Bun في التثبيت. الحزمة الحالية تصلح ذلك (npm + توليد Prisma داخل أمر البناء) — نفّذ خطوات قسم «تحديث مستودع قديم» أدناه |
+| **`Command "bun install" exited with 1`** أو **`Could not find Prisma Schema`** | مستودعك ناقص ملفات — رفعتها عبر متصفح GitHub الذي يسمح بـ100 ملف فقط (المشروع 250). اتبع قسم «تحذير حرج» أدناه لإعادة الرفع كاملاً عبر GitHub Desktop |
 | **404 — This page doesn't exist** | رفعت الملفات بالسحب والإفلات. احذف المشروع من Vercel وأعد النشر **عبر GitHub** كما في الخطوات 1-3 (السحب والإفلات لا ينفّذ البناء) |
 | **404 بعد النشر عبر GitHub** | من Vercel → Deployments افتح آخر نشر وشاهد Build Logs — إن فشل البناء أرسل لنا نص الخطأ. وتأكد أن Root Directory فارغ (المشروع في جذر المستودع) |
 | صفحة بيضاء / خطأ 500 عند الدخول | تأكد من `TURSO_DATABASE_URL` و `TURSO_AUTH_TOKEN` في Vercel → Settings → Environment Variables ثم أعد النشر (Redeploy) |
@@ -190,17 +190,48 @@ git push
 
 Vercel ينشر التعديل تلقائياً خلال ~دقيقة — قاعدة البيانات لا تتأثر.
 
-## 🔄 تحديث مستودع GitHub قديم (لمن رفع النسخة السابقة)
+## ⚠️ تحذير حرج: لا ترفع الملفات عبر متصفح GitHub بالسحب!
 
-إن كان مستودعك يحتوي النسخة القديمة وظهر خطأ `bun install exited with 1`، لا تحتاج لحذف المستودع — يكفي تعديل 3 أشياء من متصفحك مباشرة:
+موقع GitHub على المتصفح يسمح بحد أقصى **100 ملف في عملية الرفع الواحدة** — ومنصة مراسي تحتوي **250 ملفاً** (229 منها في مجلد src وحده).
 
-1. **احذف ملف `bun.lock`**: افتحه في المستودع → اضغط أيقونة سلة المهملات 🗑 → Commit changes
-2. **ارفع `package.json` الجديد**: من صفحة المستودع → Add file → Upload files → اسحب ملف `package.json` من الحزمة الجديدة (سيستبدل القديم) → Commit changes
-3. **ارفع `package-lock.json`**: بنفس الطريقة (ملف جديد لم يكن موجوداً)
+الرفع بالسحب والإفلات عبر المتصفح يفقد ملفات بصمت — فيظهر لاحقاً خطأ مثل:
 
-سيُعيد Vercel النشر تلقائياً خلال ~دقيقة من كل Commit.
+> ❌ `Could not find Prisma Schema that is required for this command`
 
-> 💡 الحزمة الجديدة تضمّن `"packageManager": "npm"` في package.json — لذا حتى لو نسيّت حذف bun.lock سيستخدم Vercel مدير npm.
+معناه أن مجلد `prisma` (أو غيره) لم يُرفع أصلاً — المستودع ناقص.
+
+### ✅ الطريقة الصحيحة الوحيدة: برنامج GitHub Desktop (سهل ورسومي)
+
+1. حمّل البرنامج من [desktop.github.com](https://desktop.github.com) وثبّته (ويندوز/ماك)
+2. سجّل الدخول بحساب GitHub نفسه
+3. **File → Clone Repository** → اختر مستودعك (مثل `marsaa-platform`) → **Clone**
+   (أو أنشئ مستودعاً جديداً من GitHub ثم استنسخه)
+4. سيفتح البرنامج مجلد المشروع على جهازك — افتحه في **مستكشف الملفات**
+5. **امسح كل محتويات المجلد** (حدد الكل بـ Ctrl+A ثم Delete)
+6. افتح مجلد الحزمة الجديدة (بعد فك الضغط) → **حدد كل المحتويات** (Ctrl+A) → انسخها (Ctrl+C) → والصقها في مجلد المستودع (Ctrl+V)
+7. ارجع لبرنامج GitHub Desktop — سيرى كل التغييرات تلقائياً:
+   - اكتب في خانة Summary مثلاً: `تحديث كامل`
+   - اضغط **Commit to main** ثم **Push origin**
+8. خلال ~دقيقة يبدأ Vercel النشر تلقائياً 🎉
+
+> 💡 هذه الطريقة ترفع الملفات الـ250 كلها بلا أي فقد — وهي نفسها الطريقة التي ستستخدمها لكل تحديث مستقبلي.
+
+### بديل بلا برامج: GitHub Codespaces (من المتصفح)
+
+1. افتح مستودعك في GitHub → زر **Code** → تبويب **Codespaces** → **Create codespace on main**
+2. اسحب ملف `marsaa-platform-deploy.zip` إلى مستكشف الملفات داخل الصفحة (يرفع ملفاً واحداً فقط — لا حد ملفات)
+3. في نافذة الطرفية (Terminal) أسفل الصفحة نفّذ بالترتيب:
+   ```bash
+   unzip -o marsaa-platform-deploy.zip -d full
+   find . -mindepth 1 -maxdepth 1 -not -name .git -not -name full -exec rm -rf {} +
+   cp -a full/. .
+   rm -rf full marsaa-platform-deploy.zip
+   git add -A
+   git commit -m "تحديث كامل"
+   git push
+   ```
+   (الأوامر تمسح كل قديم ناقص وتضع ملفات الحزمة الـ250 كاملة ثم ترفعها)
+4. أغلق الـCodespace (من قائمة ⋮ → Stop codespace) حتى لا تُستهلك ساعاتك المجانية
 
 ---
 
