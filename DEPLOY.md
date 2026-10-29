@@ -13,6 +13,25 @@
 
 ---
 
+## 🚫 تحذير مهم جداً: لا ترفع الملفات بالسحب والإفلات!
+
+منصة مراسي **تطبيق كامل (Full-Stack)** — وليست موقعاً ثابتاً من صفحات HTML.
+
+إذا سحبت الملفات أو ملف ZIP وأفلتها في موقع Vercel (Drag & Drop) فإن Vercel ينشرها **كملفات ثابتة فقط بدون تنفيذ أي عملية بناء (Build)** — فيظهر لك الخطأ:
+
+> ❌ `404 NOT_FOUND — This page doesn't exist`
+
+**السبب:** كود Next.js يحتاج إلى مرحلة بناء تُشغّل على خوادم Vercel لتحويله إلى موقع يعمل، والسحب والإفلات لا يشغّلها.
+
+**الطريقتان الصحيحتان الوحيدتان للنشر:**
+
+| الطريقة | الوصف | لمن؟ |
+|---|---|---|
+| ⭐ **عبر GitHub** (موصى بها) | ترفع الكود إلى مستودع GitHub ثم تربطه بـ Vercel (الخطوات 1-3 أدناه) | الجميع — تحديثات تلقائية عند كل تعديل |
+| عبر Vercel CLI | أمر `vercel` من جهازك/الطرفية | من يتعامل مع سطر الأوامر |
+
+---
+
 ## 📋 قبل البدء — ما تحتاجه
 
 1. **حساب GitHub** (مجاني) — [github.com/signup](https://github.com/signup)
@@ -151,7 +170,9 @@ openssl rand -base64 32
 
 | المشكلة | الحل |
 |---|---|
-| خطأ 500 عند الدخول | تأكد من `TURSO_DATABASE_URL` و `TURSO_AUTH_TOKEN` في Vercel → Settings → Environment Variables ثم أعد النشر (Redeploy) |
+| **404 — This page doesn't exist** | رفعت الملفات بالسحب والإفلات. احذف المشروع من Vercel وأعد النشر **عبر GitHub** كما في الخطوات 1-3 (السحب والإفلات لا ينفّذ البناء) |
+| **404 بعد النشر عبر GitHub** | من Vercel → Deployments افتح آخر نشر وشاهد Build Logs — إن فشل البناء أرسل لنا نص الخطأ. وتأكد أن Root Directory فارغ (المشروع في جذر المستودع) |
+| صفحة بيضاء / خطأ 500 عند الدخول | تأكد من `TURSO_DATABASE_URL` و `TURSO_AUTH_TOKEN` في Vercel → Settings → Environment Variables ثم أعد النشر (Redeploy) |
 | "عدم تطابق البيانات" أو بيانات ناقصة | تأكد أنك نفذت `turso db create --from-file` من مجلد المشروع الذي يحتوي `db/custom.db` |
 | نسيت `AUTH_SECRET` | أضفه لاحقاً من الإعدادات ثم Redeploy — الجلسات القديمة ستُطلب تسجيلها من جديد فقط |
 | أردت تحديث قاعدة البيانات بالكامل لاحقاً | `turso db destroy marasa` ثم أعد الخطوة 2-ج |
@@ -183,6 +204,7 @@ turso db shell marasa ".dump" > backup.sql
 ## 🗺️ خلاصة سريعة (للمختصرين)
 
 ```
+(❌ لا تسحب الملفات إلى Vercel مباشرة — هذا يسبب 404)
 GitHub (رفع الكود) → turso db create marasa --from-file db/custom.db
 → Vercel: New Project → Import → أضف TURSO_DATABASE_URL + TURSO_AUTH_TOKEN + AUTH_SECRET
 → Deploy → سجّل ببياناتك → غيّر كلمة المرور فوراً

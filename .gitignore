@@ -27,3 +27,8 @@ server.log
 /download
 /agent-ctx
 .DS_Store
+
+# نسخ تنزيل وضعت في public للرابط المباشر فقط — لا تُرفع إلى GitHub
+# (الحزمة تحتوي قاعدة البيانات وكلمات المرور!)
+/public/marsaa-platform-deploy.zip
+/public/DEPLOY-GUIDE-AR.md

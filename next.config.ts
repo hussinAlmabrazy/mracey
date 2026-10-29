@@ -9,7 +9,14 @@ const nextConfig: NextConfig = {
   reactStrictMode: false,
   // حزم ذات روابط أصلية (native) تُحمّل خارج حزمة السيرفر — ضروري لـ @libsql/client
   // على Vercel/Turso وغير ضار محلياً (لا تُحمّل إلا في وضع السحابة)
-  serverExternalPackages: ["@libsql/client", "@prisma/adapter-libsql"],
+  // prisma/@prisma/client: توصية Prisma الرسمية للنشر على Vercel حتى يُضمَّن
+  // محرك الاستعلام من node_modules بدل تجميعه (يفادي خطأ "Query engine not found")
+  serverExternalPackages: [
+    "@libsql/client",
+    "@prisma/adapter-libsql",
+    "@prisma/client",
+    "prisma",
+  ],
   // تثبيت مفتاح الجلسات كطبقة أمان إضافية: بيئة التشغيل تعيد كتابة .env
   // عند كل إقلاع للحاوية وتمسح AUTH_SECRET — هذا يضمن بقاء المفتاح ثابتاً
   // فلا تفسد الجلسات الموقعة عند إعادة التشغيل (سبب خطأ UNAUTHORIZED السابق)
