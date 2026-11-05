@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getUserSession } from "@/lib/auth";
+import { getSetupMode } from "@/lib/setup-restore";
 import { loginStaff } from "@/app/actions/auth";
 import { AuthForm } from "@/components/shared/auth-form";
 import { Logo } from "@/components/shared/logo";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 export const metadata = { title: "دخول الإدارة" };
 
@@ -15,9 +16,18 @@ export default async function AdminLoginPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { expired } = await searchParams;
+  const { expired, setup } = await searchParams;
   const session = await getUserSession();
   if (session?.role === "SUPER_ADMIN") redirect("/admin");
+
+  // منصة بلا حسابات بعد؟ → معالج الإعداد الأولي (أو بطاقة إرشاد إن لا قاعدة أصلاً)
+  let mode: "wizard" | "done" | "dbdown" = "done";
+  try {
+    mode = await getSetupMode();
+  } catch {
+    mode = "done"; // لا نحجب صفحة الدخول لأي خطأ عابر
+  }
+  if (mode === "wizard") redirect("/setup");
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-teal-50/70 via-background to-background pattern-grid px-4 py-10">
@@ -32,6 +42,18 @@ export default async function AdminLoginPage({
             <CardDescription>إدارة المكاتب والتراخيص والباقات والإعدادات العامة</CardDescription>
           </CardHeader>
           <CardContent>
+            {setup === "done" && (
+              <div className="mb-4 rounded-lg border border-teal-200 bg-teal-50 p-3 text-center text-xs font-bold text-teal-800 flex items-center justify-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4" />
+                تم تجهيز المنصة بنجاح — سجّل الدخول ببياناتك المعتادة
+              </div>
+            )}
+            {mode === "dbdown" && (
+              <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-center text-xs font-bold text-amber-800 flex items-center justify-center gap-1.5">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                تعذّر الاتصال بقاعدة البيانات — أضف متغيرات Turso في Vercel ثم Redeploy
+              </div>
+            )}
             {expired && (
               <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-center text-xs font-bold text-amber-800">
                 انتهت صلاحية الجلسة — سجّل دخولك مجدداً للمتابعة
