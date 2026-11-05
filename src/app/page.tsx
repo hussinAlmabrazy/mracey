@@ -30,18 +30,26 @@ const FLOW = [
 ];
 
 export default async function LandingPage() {
-  const offices = await db.office.findMany({
-    where: { status: "ACTIVE" },
-    select: { id: true, name: true, slug: true, city: true, brandColor: true, activityType: true },
-    take: 6,
-    orderBy: { createdAt: "asc" },
-  });
-  const stats = await Promise.all([
-    db.office.count({ where: { status: "ACTIVE" } }),
-    db.request.count(),
-    db.service.count(),
-    db.hSCode.count(),
-  ]);
+  // مقاومة لحالة "قاعدة غير مهيأة بعد" (نشر جديد بلا متغيرات Turso):
+  // نعرض الصفحة ببيانات فارغة بدل الانهيار — الإعداد الأولي في /setup
+  let offices: Awaited<ReturnType<typeof db.office.findMany>> = [];
+  let stats: number[] = [0, 0, 0, 0];
+  try {
+    offices = await db.office.findMany({
+      where: { status: "ACTIVE" },
+      select: { id: true, name: true, slug: true, city: true, brandColor: true, activityType: true },
+      take: 6,
+      orderBy: { createdAt: "asc" },
+    });
+    stats = await Promise.all([
+      db.office.count({ where: { status: "ACTIVE" } }),
+      db.request.count(),
+      db.service.count(),
+      db.hSCode.count(),
+    ]);
+  } catch {
+    // قاعدة غير متصلة أو بلا مخطط — تُعرض الصفحة بأصفار حتى يكتمل الإعداد
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
