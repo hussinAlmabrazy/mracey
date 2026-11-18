@@ -51,7 +51,7 @@ export default async function AdminLoginPage({
             {mode === "dbdown" && (
               <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-center text-xs font-bold text-amber-800 flex items-center justify-center gap-1.5">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
-                تعذّر الاتصال بقاعدة البيانات — أضف متغيرات Turso في Vercel ثم Redeploy
+                تعذّر الاتصال بقاعدة البيانات — أضف متغيرات Turso في إعدادات الاستضافة ثم أعد النشر
               </div>
             )}
             {expired && (
