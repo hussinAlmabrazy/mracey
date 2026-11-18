@@ -27,11 +27,15 @@ const nextConfig: NextConfig = {
   // بدون هذا الإعداد يرفض Next.js الطلب عند اختلاف x-forwarded-host عن origin
   experimental: {
     serverActions: {
+      // حجم رفع ملف dump.sql في معالج الإعداد الأولي (/setup) —
+      // النسخة الحالية ~230KB والحد الافتراضي 1MB، نرفعه احتياطاً للنمو
+      bodySizeLimit: "6mb",
       allowedOrigins: [
         "preview-chat-9275da9f-74ff-4533-9036-d41c076b7795.space-z.ai",
         "*.space-z.ai",
         "localhost:3000",
         "*.vercel.app",
+        "*.netlify.app",
       ],
     },
   },
